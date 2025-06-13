@@ -1,0 +1,187 @@
+openapi: 3.0.3
+info:
+  title: 4V PIZZA - OpenAPI 1.0
+  description: |-
+    API Specification for 4V PIZZA
+    Manage online pizzas restaurant
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: miguel_goyena@cuatrovientos.org
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+tags:
+  - name: pizza
+    description: Everything about pizzas
+  - name: order
+    description: Everything about pizzas order
+paths:
+  /pizza:
+    get:
+      tags:
+        - pizza
+      summary: Retreive the list of available pizzas
+      operationId: searchRecipes
+      parameters:
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: The name of the pizza to search
+          example: margarita
+        - in: query
+          name: ingredients
+          schema:
+            type: string
+          description: The list of Ingredients to search, separated by coma
+          example: pepper,cheese
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pizza'          
+        '400':
+          description: Any problem with server
+  /order:
+    post:
+      tags:
+        - order
+      summary: create a pizza order
+      description: ''
+      operationId: createOrder
+      requestBody:
+        description: The Order with the List of pizzas
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderOutput'
+        '400':
+          description: Validation Errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    PizzaIngredient:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Tomato Sauce
+    PizzaType:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        name:
+          type: string
+          example: Medium
+        price:
+          type: number
+          example: 12.35
+    Pizza:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        title:
+          type: string
+          example: Margarita
+        image:
+          type: string
+          format: url
+          example: https://imag.bonviveur.com/pizza-margarita.jpg
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/PizzaIngredient'
+        types:
+          type: array
+          items:
+            $ref: '#/components/schemas/PizzaType'
+    PizzaOrder:
+      type: object
+      properties:
+        pizza_id:
+          type: integer
+          format: int64
+          example: 10
+        pizzatype:
+          type: integer
+          format: int64
+          example: 25
+        quantity:
+          type: integer
+          format: int64
+          example: 2
+    Order:
+      type: object
+      properties:
+        pizzas_order:
+          type: array
+          items: 
+            $ref: '#/components/schemas/PizzaOrder'
+        delivery_time:
+          type: string
+          format: time
+          example: 22:30
+        delivery_address:
+          type: string
+          example: Avda Sancho el Mayor 34 2DR
+        payment:
+          type: object
+          properties:
+            payment_type:
+              type: string
+              example: credit-card
+            number:
+              type: string
+              example: 1234-2345-3456-4567
+    OrderOutput:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        pizzas_order:
+          type: array
+          items:
+            type: object
+            properties:
+              quantity:
+                type: integer
+                format: int64
+                example: 2
+              pizza_type:
+                $ref: '#/components/schemas/Pizza'
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+          example: 21
+        description:
+          type: string
+          example: The name is mandatory
