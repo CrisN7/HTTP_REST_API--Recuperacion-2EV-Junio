@@ -17,8 +17,8 @@ class Ingredient
     private ?string $name = null;
 
     #[ORM\ManyToOne(inversedBy: 'ingredients')]
-    // #[ORM\JoinColumn(nullable: false)]
-    #[ORM\JoinColumn(nullable: true)] // 👈 permite nulos temporalmente
+    #[ORM\JoinColumn(nullable: false)]
+    // #[ORM\JoinColumn(nullable: true)] // permite nulos temporalmente
     private ?Pizza $pizza = null;
 
     public function getId(): ?int

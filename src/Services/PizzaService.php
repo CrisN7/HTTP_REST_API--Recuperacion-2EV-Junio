@@ -20,42 +20,42 @@ class PizzaService
 
             $ingredient = new Ingredient();
             $ingredient->setName('Tomate');
-            $ingredient->setPizza(null); // Aseguramos que el ingrediente no esté asociado a ninguna pizza
+            // $ingredient->setPizza(null);
             $mockIngredients[] = $ingredient;
 
             $ingredient = new Ingredient();
             $ingredient->setName('Mozzarella');
-            $ingredient->setPizza(null); 
+            // $ingredient->setPizza(null); 
             $mockIngredients[] = $ingredient;
 
             $ingredient = new Ingredient();
             $ingredient->setName('Pepperoni');
-            $ingredient->setPizza(null); 
+            // $ingredient->setPizza(null); 
             $mockIngredients[] = $ingredient;
 
             $ingredient = new Ingredient();
             $ingredient->setName('Jamón York');
-            $ingredient->setPizza(null); 
+            // $ingredient->setPizza(null); 
             $mockIngredients[] = $ingredient;
 
             $ingredient = new Ingredient();
             $ingredient->setName('Aceitunas');
-            $ingredient->setPizza(null); 
+            // $ingredient->setPizza(null); 
             $mockIngredients[] = $ingredient;
 
             $ingredient = new Ingredient();
             $ingredient->setName('Cebolla');
-            $ingredient->setPizza(null); 
+            // $ingredient->setPizza(null); 
             $mockIngredients[] = $ingredient;
 
             $ingredient = new Ingredient();
             $ingredient->setName('Champiñones');
-            $ingredient->setPizza(null); 
+            // $ingredient->setPizza(null); 
             $mockIngredients[] = $ingredient;
 
             $ingredient = new Ingredient();
             $ingredient->setName('Pimiento Verde');
-            $ingredient->setPizza(null); 
+            // $ingredient->setPizza(null); 
             $mockIngredients[] = $ingredient;
 
             foreach ($mockIngredients as $ing) {
@@ -73,39 +73,75 @@ class PizzaService
             $pizza->setTitle('Margarita');
             $pizza->setImage('margarita.jpg');
             $pizza->setPrice(7.50);
-            $pizza->setOkCeliacs(true);
             $mockPizzas[] = $pizza;
 
             $pizza = new Pizza();
             $pizza->setTitle('Cuatro Quesos');
             $pizza->setImage('cuatro_quesos.jpg');
             $pizza->setPrice(8.00);
-            $pizza->setOkCeliacs(false);
             $mockPizzas[] = $pizza;
 
             $pizza = new Pizza();
             $pizza->setTitle('Pepperoni');
             $pizza->setImage('pepperoni.jpg');
             $pizza->setPrice(8.50);
-            $pizza->setOkCeliacs(false);
             $mockPizzas[] = $pizza;
 
             $pizza = new Pizza();
             $pizza->setTitle('Barbacoa');
             $pizza->setImage('barbacoa.jpg');
             $pizza->setPrice(9.00);
-            $pizza->setOkCeliacs(false);
             $mockPizzas[] = $pizza;
 
             foreach ($mockPizzas as $pizza) {
                 $entityManager->persist($pizza);
             }
-
-            $entityManager->flush();
         }
+
+        $this->entityManager->flush();
+        $pizzaRepo = $this->entityManager->getRepository(Pizza::class);
+        $ingredientRepo = $this->entityManager->getRepository(Ingredient::class);
+
+        // Obtener todas las pizzas e ingredientes
+        $pizzas = $pizzaRepo->findAll();
+        $ingredientsByName = [];
+        foreach ($ingredientRepo->findAll() as $ing) {
+            $ingredientsByName[$ing->getName()] = $ing;
+        }
+
+        // Asignar ingredientes a cada pizza por nombre
+        foreach ($pizzas as $pizza) {
+            switch ($pizza->getTitle()) {
+                case 'Margarita':
+                    $ingredientsByName['Tomate']->setPizza($pizza);
+                    $ingredientsByName['Mozzarella']->setPizza($pizza);
+                    break;
+
+                case 'Cuatro Quesos':
+                    $ingredientsByName['Mozzarella']->setPizza($pizza);
+                    $ingredientsByName['Cebolla']->setPizza($pizza);
+                    $ingredientsByName['Pimiento Verde']->setPizza($pizza);
+                    break;
+
+                case 'Pepperoni':
+                    $ingredientsByName['Pepperoni']->setPizza($pizza);
+                    $ingredientsByName['Tomate']->setPizza($pizza);
+                    break;
+
+                case 'Barbacoa':
+                    $ingredientsByName['Jamón York']->setPizza($pizza);
+                    $ingredientsByName['Cebolla']->setPizza($pizza);
+                    $ingredientsByName['Aceitunas']->setPizza($pizza);
+                    break;
+            }
+        }
+
+        // Guardar cambios en base de datos
+        $this->entityManager->flush();
         
     }
 
+    
     public function getAllPizzas(): array
     {
         $pizzas = $this->entityManager->getRepository(Pizza::class)->findAll();
@@ -124,9 +160,11 @@ class PizzaService
                     return new IngredientDTO(
                         name: $ingredient->getName()
                     );
-                }, $pizza->getIngredients()->toArray())
+                }, $pizza->getIngredients()->toArray()),
             );
         }, $pizzas);
     }
+
+    
 
 }
